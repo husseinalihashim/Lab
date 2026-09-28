@@ -40,6 +40,19 @@ def get_color(piece):
         return None
     return 'white' if piece.isupper() else 'black'
 
+def is_path_clear(sr, sc, er, ec):
+    dr = 0 if sr == er else (1 if er > sr else -1)
+    dc = 0 if sc == ec else (1 if ec > sc else -1)
+    
+    curr_r = sr + dr
+    curr_c = sc + dc
+    while (curr_r, curr_c) != (er, ec):
+        if board[curr_r][curr_c] != '.':
+            return False
+        curr_r += dr
+        curr_c += dc
+    return True
+
 def is_valid_pawn_move(sr, sc, er, ec, piece):
     color = get_color(piece)
     target = board[er][ec]
@@ -62,6 +75,40 @@ def is_valid_knight_move(sr, sc, er, ec):
     dr = abs(sr - er)
     dc = abs(sc - ec)
     return (dr == 2 and dc == 1) or (dr == 1 and dc == 2)
+
+def is_valid_rook_move(sr, sc, er, ec):
+    if sr != er and sc != ec:
+        return False
+    return is_path_clear(sr, sc, er, ec)
+
+def is_valid_bishop_move(sr, sc, er, ec):
+    if abs(sr - er) != abs(sc - ec):
+        return False
+    return is_path_clear(sr, sc, er, ec)
+
+def is_valid_queen_move(sr, sc, er, ec):
+    if (sr == er or sc == ec) or (abs(sr - er) == abs(sc - ec)):
+        return is_path_clear(sr, sc, er, ec)
+    return False
+
+def is_valid_king_move(sr, sc, er, ec):
+    return max(abs(sr - er), abs(sc - ec)) == 1
+
+def is_valid_move(sr, sc, er, ec, piece):
+    p = piece.lower()
+    if p == 'p':
+        return is_valid_pawn_move(sr, sc, er, ec, piece)
+    elif p == 'n':
+        return is_valid_knight_move(sr, sc, er, ec)
+    elif p == 'r':
+        return is_valid_rook_move(sr, sc, er, ec)
+    elif p == 'b':
+        return is_valid_bishop_move(sr, sc, er, ec)
+    elif p == 'q':
+        return is_valid_queen_move(sr, sc, er, ec)
+    elif p == 'k':
+        return is_valid_king_move(sr, sc, er, ec)
+    return False
 
 turn = 'white'
 
@@ -100,14 +147,9 @@ while True:
         print("Cannot capture your own piece!")
         continue
 
-    if piece.lower() == 'p':
-        if not is_valid_pawn_move(sr, sc, er, ec, piece):
-            print("Invalid move for pawn!")
-            continue
-    elif piece.lower() == 'n':
-        if not is_valid_knight_move(sr, sc, er, ec):
-            print("Invalid move for knight!")
-            continue
+    if not is_valid_move(sr, sc, er, ec, piece):
+        print(f"Invalid move for {piece}!")
+        continue
 
     board[er][ec] = piece
     board[sr][sc] = '.'
