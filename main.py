@@ -10,11 +10,21 @@ board = [
 ]
 
 def show_board():
-    print("\n  a b c d e f g h")
+    LIGHT = '\033[48;2;240;217;181m\033[38;2;0;0;0m'
+    DARK = '\033[48;2;181;136;99m\033[38;2;0;0;0m'
+    RESET = '\033[0m'
+    
+    print("\n   a  b  c  d  e  f  g  h")
     for r in range(8):
         rank = 8 - r
-        print(f"{rank} {' '.join(board[r])} {rank}")
-    print("  a b c d e f g h\n")
+        line = f" {rank} "
+        for c in range(8):
+            bg = LIGHT if (r + c) % 2 == 0 else DARK
+            icon = board[r][c]
+            line += f"{bg} {icon} {RESET}"
+        line += f" {rank}"
+        print(line)
+    print("   a  b  c  d  e  f  g  h\n")
 
 def parse_pos(pos):
     if len(pos) != 2:
@@ -47,6 +57,11 @@ def is_valid_pawn_move(sr, sc, er, ec, piece):
             return True
 
     return False
+
+def is_valid_knight_move(sr, sc, er, ec):
+    dr = abs(sr - er)
+    dc = abs(sc - ec)
+    return (dr == 2 and dc == 1) or (dr == 1 and dc == 2)
 
 turn = 'white'
 
@@ -88,6 +103,10 @@ while True:
     if piece.lower() == 'p':
         if not is_valid_pawn_move(sr, sc, er, ec, piece):
             print("Invalid move for pawn!")
+            continue
+    elif piece.lower() == 'n':
+        if not is_valid_knight_move(sr, sc, er, ec):
+            print("Invalid move for knight!")
             continue
 
     board[er][ec] = piece
